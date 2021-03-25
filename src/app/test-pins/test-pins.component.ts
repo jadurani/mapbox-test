@@ -20,6 +20,7 @@ export class TestPinsComponent implements OnInit {
 
     var marker = new mapboxgl.Marker()
       .setLngLat([-74.5, 40])
+      .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
       .addTo(map); // add the marker to the map
   }
 }
