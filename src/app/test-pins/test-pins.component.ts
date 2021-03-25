@@ -17,5 +17,9 @@ export class TestPinsComponent implements OnInit {
         center: [-74.5, 40], // starting position [lng, lat]
         zoom: 9 // starting zoom
     });
+
+    var marker = new mapboxgl.Marker()
+      .setLngLat([-74.5, 40])
+      .addTo(map); // add the marker to the map
   }
 }
