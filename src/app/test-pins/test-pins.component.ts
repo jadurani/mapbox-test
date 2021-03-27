@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import mapboxgl from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 
+const TILE_SET = "mapbox://jadurani.1wbrzzlk";
+
 const CENTER = {
   coords: [121.09111031660495, 14.632513058308708],
   name: "",
@@ -68,36 +70,75 @@ const MARKERS = [
 })
 export class TestPinsComponent implements OnInit {
   centerMarker;
+  map;
 
   constructor() { }
 
   ngOnInit(): void {
     mapboxgl.accessToken = 'pk.eyJ1IjoiamFkdXJhbmkiLCJhIjoiY2tsZ245OGx3MHltbTJwcWwxbGpubjY1cyJ9.lqNLH1nne4ddBcXvWsP9YQ';
 
-    const map = new mapboxgl.Map({
+    this.map = new mapboxgl.Map({
         container: 'map', // container ID
         style: 'mapbox://styles/jadurani/ckmodfz86222p17qpygjc2y5j', // style URL
         center: CENTER.coords, // starting position [lng, lat]
         zoom: 13, // starting zoom,
     });
 
-    this.centerMarker = new mapboxgl.Marker()
-      .setLngLat(CENTER.coords)
-      .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
-      .addTo(map); // add the marker to the map
+    this.map.on('load', () => {
+      this.centerMarker = new mapboxgl.Marker({"color": "#b40219"})
+        .setLngLat(CENTER.coords)
+        .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
+        .addTo(this.map); // add the marker to the map
 
-    MARKERS.forEach((m) => (
-      new mapboxgl.Marker()
-        .setLngLat(m.coords)
-        .setPopup(new mapboxgl.Popup().setHTML(
-          `
-            <div>
-              <div>${m.name}</div>
-              <small>${m.address}</small>
-            </div>
-          `
-        ))
-        .addTo(map)
-    ));
+      MARKERS.forEach((m) => (
+        new mapboxgl.Marker()
+          .setLngLat(m.coords)
+          .setPopup(new mapboxgl.Popup().setHTML(
+            `
+              <div>
+                <div>${m.name}</div>
+                <small>${m.address}</small>
+              </div>
+            `
+          ))
+          .addTo(this.map)
+      ));
+
+      this.map.addSource("marikina-25-flood", {
+        type: "vector",
+        url: TILE_SET
+      });
+
+      this.map.addLayer({
+        "id": "marikina-25-flood",
+        "type": "fill",
+        "source": "marikina-25-flood",
+        "source-layer": "marikina_fh25yr_10m-9ew6s9",
+        "paint": {
+          "fill-color": [
+            "step",
+            ["get", "Var"],
+            "hsl(50, 99%, 82%)",
+            1,
+            [
+              "match",
+              ["get", "Var"],
+              0,
+              "hsla(0, 100%, 68%, 0.89)",
+              "hsl(27, 100%, 51%)"
+            ],
+            3,
+            [
+              "match",
+              ["get", "Var"],
+              [3],
+              "rgb(255, 0, 0)",
+              "#000000"
+            ]
+          ],
+          "fill-opacity": .3
+        }
+      })
+    })
   }
 }
