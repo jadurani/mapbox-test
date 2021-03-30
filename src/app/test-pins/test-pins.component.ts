@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import mapboxgl from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
+import mapboxgl, { LngLatLike, Map } from 'mapbox-gl'; // or "const mapboxgl = require('mapbox-gl');"
 
-const TILE_SET = "mapbox://jadurani.1wbrzzlk";
-
-const CENTER = {
-  coords: [121.09111031660495, 14.632513058308708],
-  name: "",
-  adderss: ""
+type SampleMarker = {
+  coords: LngLatLike;
+  name: string;
+  address: string;
 }
 
-const MARKERS = [
+const CENTER: LngLatLike = [121.09111031660495, 14.632513058308708];
+
+const MARKERS: SampleMarker[] = [
   {
     coords: [121.07664612988394, 14.610013585323642],
     name: "Eastwood City Police and Fire Station",
@@ -70,7 +70,8 @@ const MARKERS = [
 })
 export class TestPinsComponent implements OnInit {
   centerMarker;
-  map;
+  map: Map;
+  poi = MARKERS;
 
   constructor() { }
 
@@ -80,13 +81,13 @@ export class TestPinsComponent implements OnInit {
     this.map = new mapboxgl.Map({
         container: 'map', // container ID
         style: 'mapbox://styles/jadurani/ckmodfz86222p17qpygjc2y5j', // style URL
-        center: CENTER.coords, // starting position [lng, lat]
+        center: CENTER, // starting position [lng, lat]
         zoom: 13, // starting zoom,
     });
 
     this.map.on('load', () => {
       this.centerMarker = new mapboxgl.Marker({"color": "#b40219"})
-        .setLngLat(CENTER.coords)
+        .setLngLat(CENTER)
         .setPopup(new mapboxgl.Popup().setHTML("<h1>Hello World!</h1>"))
         .addTo(this.map); // add the marker to the map
 
@@ -106,7 +107,7 @@ export class TestPinsComponent implements OnInit {
 
       this.map.addSource("marikina-25-flood", {
         type: "vector",
-        url: TILE_SET
+        url: "mapbox://jadurani.1wbrzzlk"
       });
 
       this.map.addLayer({
@@ -138,7 +139,77 @@ export class TestPinsComponent implements OnInit {
           ],
           "fill-opacity": .3
         }
-      })
+      });
+
+        // Add source and layer for museums.
+      this.map.addSource('mapbox-flood', {
+          type: 'vector',
+          url: 'mapbox://cloud5.0cab92pa'
+      });
+
+      this.map.addLayer({
+          'id': 'flood-map',
+          'type': 'fill',
+          'source': 'mapbox-flood',
+          'source-layer': 'panay_25yr',
+          'paint': {
+            'fill-color': [
+              'match',
+              ['get', 'Var'],
+              [1],
+              '#6f6f06',
+              [2],
+              '#c28f29',
+              [3],
+              '#001919',
+              '#000000'
+            ],
+            'fill-opacity': 0.75
+          },
+        'layout': {
+        // Make the layer visible by default.
+        'visibility': 'visible'
+        }
+      });
+
+
+      // Add source and layer for contours.
+      this.map.addSource('stormsurge', {
+          type: 'vector',
+          url: 'mapbox://cloud5.06sq67fr'
+      });
+      this.map.addLayer({
+          'id': 'stormsurge',
+          'type': 'fill',
+          'source': 'stormsurge',
+          'source-layer': 'capiz-5pwmai',
+          'paint': {
+            'fill-color': [
+              'match',
+              ['get', 'HAZ'],
+              [1],
+              '#bdd7e7',
+              [2],
+              '#6baed6',
+              [3],
+              '#2171b5',
+              '#000000'
+            ],
+            'fill-opacity': 0.75
+          },
+        'layout': {
+        // Make the layer visible by default.
+        'visibility': 'visible'
+        }
+      });
+    })
+  }
+
+  flyto(m: SampleMarker) {
+    this.map.flyTo({
+      center: m.coords,
+      zoom: 18,
+      essential: true,
     })
   }
 }
